@@ -52,19 +52,19 @@ A Pull Request with:
 
 ## 📥 Submission Guidelines
 
-1️⃣ **Fork this repository.**
-2️⃣ **Create a feature branch** for your implementation.
-3️⃣ **Commit your changes** with meaningful commit messages.
-4️⃣ **Open a Pull Request** following the provided template.
-5️⃣ **Our team will review** and provide feedback.
+1. **Fork this repository.**
+2. **Create a feature branch** for your implementation.
+3. **Commit your changes** with meaningful commit messages.
+4. **Open a Pull Request** following the provided template.
+5. **Our team will review** and provide feedback.
 
 ## ✅ Evaluation Criteria
 
-🔍 **Correctness and completeness** of the solution.
-🔍 **Code quality, modularity, and best practices.**
-🔍 **Security considerations** in networking and IAM roles.
-🔍 **Automation using CI/CD and pre-commit hooks.**
-🔍 **Justification for chosen IaC tool(s).**
-🔍 **Documentation clarity.**
+- **Correctness and completeness** of the solution.
+- **Code quality, modularity, and best practices.**
+- **Security considerations** in networking and IAM roles.
+- **Automation using CI/CD and pre-commit hooks.**
+- **Justification for chosen IaC tool(s).**
+- **Documentation clarity.**
 
-🎯 **Good luck and happy coding!** 🚀
+## 🎯 **Good luck and happy coding!** 🚀
