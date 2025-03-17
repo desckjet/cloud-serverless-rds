@@ -63,6 +63,9 @@ Your task is to deploy the following infrastructure on AWS:
 - Running a local database to simulate connectivity 🛠
 - Providing a local environment to test API interactions before deployment 🖥
 
+> [!TIP]
+> Looking for inspiration or additional ideas to earn extra points? Check out our Awesome NaNLABS repository for reference projects and best practices! 🚀
+
 ## 📥 Submission Guidelines
 
 > 📌 **Follow these steps to submit your solution:**
