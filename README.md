@@ -64,7 +64,7 @@ Your task is to deploy the following infrastructure on AWS:
 - Providing a local environment to test API interactions before deployment 🖥
 
 > [!TIP]
-> Looking for inspiration or additional ideas to earn extra points? Check out our Awesome NaNLABS repository for reference projects and best practices! 🚀
+> Looking for inspiration or additional ideas to earn extra points? Check out our [Awesome NaNLABS repository](https://github.com/nanlabs/awesome-nan) for reference projects and best practices! 🚀
 
 ## 📥 Submission Guidelines
 
