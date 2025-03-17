@@ -1,7 +1,5 @@
 # 🚀 Cloud Infrastructure Engineer Challenge
 
-## 🔥 Description
-
 Welcome to the **Cloud Infrastructure Engineer Challenge!** 🎉 This challenge is designed to evaluate your ability to work with **Infrastructure as Code (IaC)**, AWS networking, IAM, and automation using modern DevOps practices.
 
 You will deploy a small AWS architecture using **any IaC tool of your choice** (Terraform preferred, but alternatives are allowed). If you choose a different tool or a combination of tools, **justify your decision!** 💡
