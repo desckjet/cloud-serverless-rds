@@ -60,8 +60,8 @@ Your task is to deploy the following infrastructure on AWS:
 - **Tests for your IaC code** using `terraform validate`, `Terratest`, or equivalent for chosen tool.
 - **Monitoring alerts** (e.g., AWS CloudWatch Alarms for Lambda errors).
 - **Docker or Docker Compose** to facilitate local testing, such as:
-- Running a local database to simulate connectivity 🛠
-- Providing a local environment to test API interactions before deployment 🖥
+  - Running a local database to simulate connectivity 🛠
+  - Providing a local environment to test API interactions before deployment 🖥
 
 > [!TIP]
 > Looking for inspiration or additional ideas to earn extra points? Check out our [Awesome NaNLABS repository](https://github.com/nanlabs/awesome-nan) for reference projects and best practices! 🚀
