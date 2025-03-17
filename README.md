@@ -8,17 +8,17 @@ You will deploy a small AWS architecture using **any IaC tool of your choice** (
 
 Your task is to deploy the following infrastructure on AWS:
 
-✅ **An API Gateway** with a single endpoint (`GET /info`).
-✅ **A Lambda function** triggered by the API Gateway.
-✅ **A database instance or application backend** running in a private subnet. This can be:
+- **An API Gateway** with a single endpoint (`GET /info`).
+- **A Lambda function** triggered by the API Gateway.
+- **A database instance or application backend** running in a private subnet. This can be:
 
 - A **PostgreSQL RDS instance** 📦
 - A **self-hosted database** on an EC2 instance 🔗
 - A **deployed application** such as WordPress hosted on EC2 🎨
-✅ **The Lambda function must connect** to the database/backend and return basic information about its connection and status.
-✅ **Logs from the Lambda** should be visible in CloudWatch 📊
-✅ **Networking must include:** VPC, public/private subnets, and security groups.
-✅ **The Lambda must be in a private subnet** and use a NAT Gateway in a public subnet for internet access 🌍
+- **The Lambda function must connect** to the database/backend and return basic information about its connection and status.
+- **Logs from the Lambda** should be visible in CloudWatch 📊
+- **Networking must include:** VPC, public/private subnets, and security groups.
+- **The Lambda must be in a private subnet** and use a NAT Gateway in a public subnet for internet access 🌍
 
 ## 📌 Requirements
 
@@ -33,20 +33,20 @@ Your task is to deploy the following infrastructure on AWS:
 
 A Pull Request with:
 
-- ✅ **An IaC module** that deploys the entire architecture.
-- ✅ **A `README.md`** with deployment instructions and tool selection justification.
-- ✅ **A working API Gateway endpoint** that responds with a JSON payload from the Lambda, including:
+- **An IaC module** that deploys the entire architecture.
+- **A `README.md`** with deployment instructions and tool selection justification.
+- **A working API Gateway endpoint** that responds with a JSON payload from the Lambda, including:
   - Connection status to the database or backend.
   - Basic metadata about the target system (e.g., DB version, instance type, WordPress version, etc.).
-- ✅ **CloudWatch logs** from the Lambda.
+- **CloudWatch logs** from the Lambda.
 
 ## 🌟 Nice to Have
 
-✨ **GitHub Actions to validate IaC** (e.g., `terraform fmt`, `terraform validate`, or equivalent for chosen tool).
-✨ **Pre-commit hooks** to ensure linting and formatting checks before commits.
-✨ **Tests for your IaC code** using `terraform validate`, `Terratest`, or equivalent for chosen tool.
-✨ **Monitoring alerts** (e.g., AWS CloudWatch Alarms for Lambda errors).
-✨ **Docker or Docker Compose** to facilitate local testing, such as:
+- **GitHub Actions to validate IaC** (e.g., `terraform fmt`, `terraform validate`, or equivalent for chosen tool).
+- **Pre-commit hooks** to ensure linting and formatting checks before commits.
+- **Tests for your IaC code** using `terraform validate`, `Terratest`, or equivalent for chosen tool.
+- **Monitoring alerts** (e.g., AWS CloudWatch Alarms for Lambda errors).
+- **Docker or Docker Compose** to facilitate local testing, such as:
 
 - Running a local database to simulate connectivity 🛠
 - Providing a local environment to test API interactions before deployment 🖥
