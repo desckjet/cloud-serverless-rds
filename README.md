@@ -33,8 +33,6 @@ Your task is to deploy the following infrastructure on AWS:
 
 - **IaC:** Any tool of your choice (**Terraform preferred**, but others are allowed if justified).
 - **AWS Services:** VPC, API Gateway, Lambda, CloudWatch, NAT Gateway, RDS or EC2.
-- **CI/CD:** GitHub Actions for automation 🏗 (optional)
-- **Code Quality:** Pre-commit hooks for linting and security checks 🛡
 
 ### 📄 Expected Deliverables
 
