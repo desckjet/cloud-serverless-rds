@@ -55,13 +55,13 @@ Your task is to deploy the following infrastructure on AWS:
 
 > 💡 **Bonus Points For:**
 
-- **GitHub Actions to validate IaC** (e.g., `terraform fmt`, `terraform validate`, or equivalent for chosen tool).
-- **Pre-commit hooks** to ensure linting and formatting checks before commits.
-- **Tests for your IaC code** using `terraform validate`, `Terratest`, or equivalent for chosen tool.
-- **Monitoring alerts** (e.g., AWS CloudWatch Alarms for Lambda errors).
-- **Docker or Docker Compose** to facilitate local testing, such as:
-  - Running a local database to simulate connectivity 🛠
-  - Providing a local environment to test API interactions before deployment 🖥
+- **Auto Scaling & High Availability**: Implementing **Multi-AZ for RDS** or an **Auto Scaling Group for EC2** to improve availability.  
+- **Load Balancer or CloudFront**: Adding an **Application Load Balancer (ALB)** or **CloudFront** for distributing traffic efficiently.  
+- **Backup & Disaster Recovery**: Implementing **automated backups for RDS** or **snapshot strategies**.  
+- **GitHub Actions for validation**: Running **`terraform fmt`, `terraform validate`**, or equivalent for the chosen IaC tool.  
+- **Pre-commit hooks**: Ensuring linting and security checks before committing.  
+- **Monitoring & Logging**: Setting up **AWS CloudWatch Alarms for infrastructure health (e.g., RDS CPU usage, EC2 status)**.  
+- **Docker for local testing**: Using Docker to **simulate infrastructure components** (e.g., a local PostgreSQL instance).
 
 > [!TIP]
 > Looking for inspiration or additional ideas to earn extra points? Check out our [Awesome NaNLABS repository](https://github.com/nanlabs/awesome-nan) for reference projects and best practices! 🚀
@@ -80,11 +80,11 @@ Your task is to deploy the following infrastructure on AWS:
 
 > 🔍 **What we'll be looking at:**
 
-- **Correctness and completeness** of the solution.
-- **Code quality, modularity, and best practices.**
-- **Security considerations** in networking and IAM roles.
-- **Justification for chosen tool(s).**
-- **Documentation clarity.**
-- **Bonus points for additional features.**
+- **Correctness and completeness** of the deployed **infrastructure**.  
+- **Use of best practices for networking and security** (VPC, subnets, IAM).  
+- **Scalability & High Availability considerations** (optional. e.g., Multi-AZ, Auto Scaling, Load Balancer).  
+- **Backup & Disaster Recovery strategies** implemented (optional).  
+- **CI/CD automation using GitHub Actions and pre-commit hooks** (optional).  
+- **Documentation clarity**: Clear explanation of infrastructure choices and configurations.
 
 ## 🎯 **Good luck and happy coding!** 🚀
