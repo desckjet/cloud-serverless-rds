@@ -27,14 +27,14 @@ Your task is to deploy the following infrastructure on AWS:
 
 ## 📌 Requirements
 
-### 🛠 Tech Stack
+### ⚙️ Tech Stack
 
 > ⚡ **Must Include:**
 
 - **IaC:** Any tool of your choice (**Terraform preferred**, but others are allowed if justified).
 - **AWS Services:** VPC, API Gateway, Lambda, CloudWatch, NAT Gateway, RDS or EC2.
 
-### 📄 Expected Deliverables
+### 📦 Deliverables
 
 > 📥 **Your submission must be a Pull Request that must include:**
 
