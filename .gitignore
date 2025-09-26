@@ -1,0 +1,20 @@
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+
+# Terraform directories
+.terraform/
+.terraformrc
+terraform.rc
+
+# Local variable overrides
+*.tfvars
+*.tfvars.json
+
+# IDE and editor artifacts
+.vscode/
+.idea/
+.DS_Store
