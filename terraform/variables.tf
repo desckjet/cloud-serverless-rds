@@ -75,3 +75,41 @@ variable "state_bucket_force_destroy" {
   type        = bool
   default     = false
 }
+
+variable "github_owner" {
+  description = "GitHub organization or user that owns the repository."
+  type        = string
+}
+
+variable "github_repository" {
+  description = "GitHub repository name without owner."
+  type        = string
+}
+
+variable "github_subject_claims" {
+  description = "List of allowed subject claims (e.g. repo:org/repo:ref:refs/heads/main) for GitHub Actions OIDC role."
+  type        = list(string)
+  default     = []
+}
+
+variable "ci_managed_policy_arns" {
+  description = "List of managed policy ARNs to attach to the GitHub Actions role."
+  type        = list(string)
+  default = [
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+    "arn:aws:iam::aws:policy/AmazonVPCFullAccess",
+    "arn:aws:iam::aws:policy/IAMFullAccess"
+  ]
+}
+
+variable "create_github_oidc_provider" {
+  description = "Create the GitHub OIDC provider in AWS (disable if already exists)."
+  type        = bool
+  default     = true
+}
+
+variable "existing_github_oidc_provider_arn" {
+  description = "Existing GitHub OIDC provider ARN to reuse when create_github_oidc_provider is false."
+  type        = string
+  default     = ""
+}

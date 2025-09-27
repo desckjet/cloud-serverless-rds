@@ -53,3 +53,16 @@ module "api_gateway" {
   lambda_function_name = module.lambda.function_name
   tags                 = local.common_tags
 }
+
+module "github_oidc" {
+  source = "./modules/github_oidc"
+
+  name_prefix                = local.name_prefix
+  github_owner               = var.github_owner
+  github_repository          = var.github_repository
+  github_subject_claims      = var.github_subject_claims
+  managed_policy_arns        = var.ci_managed_policy_arns
+  create_oidc_provider       = var.create_github_oidc_provider
+  existing_oidc_provider_arn = var.existing_github_oidc_provider_arn
+  tags                       = local.common_tags
+}
