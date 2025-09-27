@@ -1,10 +1,13 @@
 locals {
   module_tags = merge(var.tags, { Module = "github-oidc" })
 
-  # Default subject claim for GitHub Actions from main branch
-  default_subject = "repo:${var.github_owner}/${var.github_repository}:ref:refs/heads/main"
-  # list of repository/branch that can assume the role
-  subject_claims = length(var.github_subject_claims) > 0 ? var.github_subject_claims : [local.default_subject]
+  # Default subject claims for GitHub Actions (main + feature branches)
+  default_subjects = [
+    "repo:${var.github_owner}/${var.github_repository}:ref:refs/heads/main",
+    "repo:${var.github_owner}/${var.github_repository}:ref:refs/heads/feature"
+  ]
+  # list of repository/branch references allowed to assume the role
+  subject_claims = length(var.github_subject_claims) > 0 ? var.github_subject_claims : local.default_subjects
 
   # Determine which OIDC provider ARN to use to avoid duplication
   created_oidc_provider_arn = try(aws_iam_openid_connect_provider.github[0].arn, "")

@@ -95,11 +95,7 @@ variable "github_subject_claims" {
 variable "ci_managed_policy_arns" {
   description = "List of managed policy ARNs to attach to the GitHub Actions role."
   type        = list(string)
-  default = [
-    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
-    "arn:aws:iam::aws:policy/AmazonVPCFullAccess",
-    "arn:aws:iam::aws:policy/IAMFullAccess"
-  ]
+  default = []
 }
 
 variable "create_github_oidc_provider" {
