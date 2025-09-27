@@ -63,3 +63,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "state_bucket_name" {
+  description = "Optional override for the S3 bucket name storing Terraform state. Leave empty to use project/environment defaults."
+  type        = string
+  default     = ""
+}
+
+variable "state_bucket_force_destroy" {
+  description = "Allow Terraform to delete the state bucket even if it contains objects."
+  type        = bool
+  default     = false
+}
