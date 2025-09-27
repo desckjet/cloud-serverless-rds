@@ -136,7 +136,7 @@ resource "aws_route" "private_nat" {
 resource "aws_route_table_association" "private" {
   for_each = aws_subnet.private
 
-  subnet_id      = aws_subnet.private[each.key].id
+  subnet_id = aws_subnet.private[each.key].id
   # Associate the private route table with the NAT gateway in a round-robin fashion
   route_table_id = aws_route_table.private[tostring(tonumber(each.key) % length(aws_route_table.private))].id
 }
