@@ -95,7 +95,7 @@ variable "github_subject_claims" {
 variable "ci_managed_policy_arns" {
   description = "List of managed policy ARNs to attach to the GitHub Actions role."
   type        = list(string)
-  default     = [
+  default = [
     "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
     "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
     "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
