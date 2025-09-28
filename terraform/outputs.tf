@@ -27,3 +27,9 @@ output "github_oidc_provider_arn" {
   description = "OIDC provider ARN used for GitHub Actions federation."
   value       = module.github_oidc.oidc_provider_arn
 }
+
+output "ci_tester_role_arn" {
+  description = "IAM role ARN for local testing with GitHub Actions permissions."
+  value       = var.create_ci_tester_role ? aws_iam_role.ci_tester[0].arn : null
+  depends_on  = [aws_iam_role.ci_tester]
+}

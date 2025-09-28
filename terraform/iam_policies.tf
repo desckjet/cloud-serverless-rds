@@ -3,13 +3,8 @@ data "aws_iam_policy_document" "ci_minimal" {
     sid = "TerraformStateBucket"
 
     actions = [
-      "s3:GetObject",
       "s3:PutObject",
       "s3:DeleteObject",
-      "s3:ListBucket",
-      "s3:GetBucketLocation",
-      "s3:GetBucketVersioning",
-      "s3:GetEncryptionConfiguration"
     ]
 
     resources = [
@@ -18,9 +13,22 @@ data "aws_iam_policy_document" "ci_minimal" {
     ]
   }
 
-  statement {
-    sid       = "TerraformNetworkingRead"
-    actions   = ["ec2:Describe*", "iam:ListRoles", "iam:GetRole"]
-    resources = ["*"]
-  }
+  # statement {
+  #   sid = "TerraformIAMRead"
+  #   actions = [
+  #     "iam:GetRole",
+  #     "iam:GetRolePolicy",
+  #     "iam:ListRoles",
+  #     "iam:ListRolePolicies",
+  #     "iam:GetOpenIDConnectProvider",
+  #     "iam:ListAttachedRolePolicies"
+  #   ]
+  #   resources = ["*"]
+  # }
+
+  # statement {
+  #   sid       = "TerraformEC2Read"
+  #   actions   = ["ec2:Describe*"]
+  #   resources = ["*"]
+  # }
 }
