@@ -103,7 +103,7 @@ variable "ci_managed_policy_arns" {
 }
 
 variable "ci_tester_principals" {
-  description = "List of IAM principal ARNs allowed to assume the CI tester role when create_ci_tester_role is true."
+  description = "List of IAM principal ARNs allowed to assume the CI tester role."
   type        = list(string)
   default     = []
   validation {
