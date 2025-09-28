@@ -53,12 +53,12 @@ Your task is to deploy the following infrastructure on AWS:
 
 > 💡 **Bonus Points For:**
 
-- **Auto Scaling & High Availability**: Implementing **Multi-AZ for RDS** or an **Auto Scaling Group for EC2** to improve availability.  
-- **Load Balancer or CloudFront**: Adding an **Application Load Balancer (ALB)** or **CloudFront** for distributing traffic efficiently.  
-- **Backup & Disaster Recovery**: Implementing **automated backups for RDS** or **snapshot strategies**.  
-- **GitHub Actions for validation**: Running **`terraform fmt`, `terraform validate`**, or equivalent for the chosen IaC tool.  
-- **Pre-commit hooks**: Ensuring linting and security checks before committing.  
-- **Monitoring & Logging**: Setting up **AWS CloudWatch Alarms for infrastructure health (e.g., RDS CPU usage, EC2 status)**.  
+- **Auto Scaling & High Availability**: Implementing **Multi-AZ for RDS** or an **Auto Scaling Group for EC2** to improve availability.
+- **Load Balancer or CloudFront**: Adding an **Application Load Balancer (ALB)** or **CloudFront** for distributing traffic efficiently.
+- **Backup & Disaster Recovery**: Implementing **automated backups for RDS** or **snapshot strategies**.
+- **GitHub Actions for validation**: Running **`terraform fmt`, `terraform validate`**, or equivalent for the chosen IaC tool.
+- **Pre-commit hooks**: Ensuring linting and security checks before committing.
+- **Monitoring & Logging**: Setting up **AWS CloudWatch Alarms for infrastructure health (e.g., RDS CPU usage, EC2 status)**.
 - **Docker for local testing**: Using Docker to **simulate infrastructure components** (e.g., a local PostgreSQL instance).
 
 > [!TIP]
@@ -78,11 +78,18 @@ Your task is to deploy the following infrastructure on AWS:
 
 > 🔍 **What we'll be looking at:**
 
-- **Correctness and completeness** of the deployed **infrastructure**.  
-- **Use of best practices for networking and security** (VPC, subnets, IAM).  
-- **Scalability & High Availability considerations** (optional. e.g., Multi-AZ, Auto Scaling, Load Balancer).  
-- **Backup & Disaster Recovery strategies** implemented (optional).  
-- **CI/CD automation using GitHub Actions and pre-commit hooks** (optional).  
+- **Correctness and completeness** of the deployed **infrastructure**.
+- **Use of best practices for networking and security** (VPC, subnets, IAM).
+- **Scalability & High Availability considerations** (optional. e.g., Multi-AZ, Auto Scaling, Load Balancer).
+- **Backup & Disaster Recovery strategies** implemented (optional).
+- **CI/CD automation using GitHub Actions and pre-commit hooks** (optional).
 - **Documentation clarity**: Clear explanation of infrastructure choices and configurations.
+
+## 🛠 Development Workflow
+
+- Install the tooling once (`brew install pre-commit tflint tfsec` or use the official binaries/pip).
+- Enable the hooks with `pre-commit install`; they enforce `terraform fmt`, `terraform validate`, `tflint` and `tfsec` before every commit.
+- Run `pre-commit run --all-files` or `terraform fmt -recursive` locally to check formatting on demand.
+- The GitHub Actions workflow (`.github/workflows/gitops.yml`) repeats the same checks (`fmt`, `validate`, `tflint`, `tfsec`) and blocks merges when any lint or security finding appears.
 
 ## 🎯 **Good luck and happy coding!** 🚀

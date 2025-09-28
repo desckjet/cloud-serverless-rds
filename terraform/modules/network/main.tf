@@ -148,6 +148,7 @@ resource "aws_security_group" "shared" {
   description = "Shared security group for Lambda and database components"
 
   egress {
+    description = "Allow all outbound traffic from private workloads"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
