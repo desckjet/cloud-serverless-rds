@@ -13,21 +13,17 @@ data "aws_iam_policy_document" "ci_minimal" {
     ]
   }
 
-  # statement {
-  #   sid = "TerraformIAMRead"
-  #   actions = [
-  #     "iam:GetRole",
-  #     "iam:GetRolePolicy",
-  #     "iam:ListRoles",
-  #     "iam:ListRolePolicies",
-  #     "iam:GetOpenIDConnectProvider",
-  #     "iam:ListAttachedRolePolicies"
-  #   ]
-  #   resources = ["*"]
-  # }
+  statement {
+    sid = "TerraformIAM"
+    actions = [
+      "iam:DetachRolePolicy",
+      "iam:DeleteRolePolicy",
+    ]
+    resources = ["*"]
+  }
 
   # statement {
-  #   sid       = "TerraformEC2Read"
+  #   sid       = "TerraformEC2"
   #   actions   = ["ec2:Describe*"]
   #   resources = ["*"]
   # }

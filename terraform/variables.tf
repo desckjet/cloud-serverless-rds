@@ -102,19 +102,13 @@ variable "ci_managed_policy_arns" {
   ]
 }
 
-variable "create_ci_tester_role" {
-  description = "Create an auxiliary IAM role for local testing with the same permissions as the GitHub Actions role."
-  type        = bool
-  default     = false
-}
-
 variable "ci_tester_principals" {
   description = "List of IAM principal ARNs allowed to assume the CI tester role when create_ci_tester_role is true."
   type        = list(string)
   default     = []
   validation {
-    condition     = length(var.ci_tester_principals) > 0 || var.create_ci_tester_role == false
-    error_message = "ci_tester_principals must contain at least one principal when create_ci_tester_role is true."
+    condition     = length(var.ci_tester_principals) > 0
+    error_message = "ci_tester_principals must contain at least one principal."
   }
 }
 
