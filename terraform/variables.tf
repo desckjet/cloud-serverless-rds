@@ -40,16 +40,46 @@ variable "private_subnet_cidrs" {
   ]
 }
 
-variable "db_instance_class" {
-  description = "Instance class to use for the database backend."
+variable "db_engine_version" {
+  description = "Database engine version for the Aurora PostgreSQL cluster."
   type        = string
-  default     = "db.t4g.micro"
+  default     = "17.5"
 }
 
-variable "db_engine_version" {
-  description = "Database engine version for RDS."
+variable "db_instance_class" {
+  description = "Instance class to use for the Aurora cluster instances (use db.serverless for Serverless v2)."
   type        = string
-  default     = "15.4"
+  default     = "db.serverless"
+}
+
+variable "db_name" {
+  description = "Logical database name created in the Aurora cluster."
+  type        = string
+  default     = "app"
+}
+
+variable "iam_database_username" {
+  description = "Database username that will leverage IAM authentication."
+  type        = string
+  default     = "iam_db_user"
+}
+
+variable "iam_token_username" {
+  description = "Dedicated database username used for IAM token authentication via RDS Proxy."
+  type        = string
+  default     = "iam_token_user"
+}
+
+variable "aurora_min_capacity" {
+  description = "Aurora Serverless v2 minimum ACU capacity."
+  type        = number
+  default     = 1
+}
+
+variable "aurora_max_capacity" {
+  description = "Aurora Serverless v2 maximum ACU capacity."
+  type        = number
+  default     = 4
 }
 
 variable "enable_rds_multi_az" {
@@ -98,7 +128,9 @@ variable "ci_managed_policy_arns" {
   default = [
     "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
     "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
-    "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+    "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess",
+    "arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess",
+    "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
   ]
 }
 
@@ -116,6 +148,12 @@ variable "create_github_oidc_provider" {
   description = "Create the GitHub OIDC provider in AWS (disable if already exists)."
   type        = bool
   default     = true
+}
+
+variable "ec2_instance_type" {
+  description = "Instance type for the SSM-managed EC2 utility host."
+  type        = string
+  default     = "t3.nano"
 }
 
 variable "existing_github_oidc_provider_arn" {

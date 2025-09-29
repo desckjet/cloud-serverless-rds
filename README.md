@@ -87,9 +87,46 @@ Your task is to deploy the following infrastructure on AWS:
 
 ## 🛠 Development Workflow
 
-- Install the tooling once (`brew install pre-commit tflint tfsec` or use the official binaries/pip).
+- Install the tooling once (`brew install pre-commit tflint tfsec libpq` or use the official binaries/pip) and link the PostgreSQL client (`brew link --force libpq`).
+- Install the Session Manager plugin for AWS CLI (`brew install --cask session-manager-plugin`) to enable SSM port forwarding.
 - Enable the hooks with `pre-commit install`; they enforce `terraform fmt`, `terraform validate`, `tflint` and `tfsec` before every commit.
 - Run `pre-commit run --all-files` or `terraform fmt -recursive` locally to check formatting on demand.
 - The GitHub Actions workflow (`.github/workflows/gitops.yml`) repeats the same checks (`fmt`, `validate`, `tflint`, `tfsec`) and blocks merges when any lint or security finding appears.
+- Define the GitHub repository secrets `AWS_GITHUB_ROLE_ARN` and `CI_TESTER_PRINCIPALS` (ARNs of the principals that can assume the tester role) so that the pipeline and your local sessions can federate.
+
+## 🔐 Accessing Aurora via SSM Bastion
+
+- Terraform provisions a private EC2 instance (SSM managed) and an Aurora PostgreSQL Serverless v2 cluster fronted by an RDS Proxy with IAM authentication.
+- After deployment, retrieve outputs:
+  ```bash
+  terraform output ec2_instance_id
+  terraform output database_proxy_endpoint
+  terraform output database_master_username
+  terraform output database_iam_token_username
+  ```
+- Establish an SSM port forwarding session against the writer when you need to execute administrative commands:
+  ```bash
+  aws ssm start-session \
+    --target <ec2_instance_id> \
+    --document-name AWS-StartPortForwardingSessionToRemoteHost \
+    --parameters '{"host":["<proxy-endpoint>"],"portNumber":["5432"],"localPortNumber":["5432"]}' \
+    --region us-east-1
+  ```
+- With the password stored in Secrets Manager (`terraform output database_credentials_secret_arn`) create the IAM-dedicated user once and enable the necessary permissions:
+  ```sql
+  CREATE USER <database_iam_token_username> WITH LOGIN;
+  GRANT rds_iam TO <database_iam_token_username>;
+  GRANT CONNECT ON DATABASE app TO <database_iam_token_username>;
+  GRANT USAGE ON SCHEMA public TO <database_iam_token_username>;
+  ```
+- Generate an IAM auth token (replace the region/account accordingly):
+  ```bash
+  aws rds generate-db-auth-token \
+    --hostname <proxy-endpoint> \
+    --port 5432 \
+    --region us-east-1 \
+    --username <database_iam_token_username>
+  ```
+- Use the token as the password in your PostgreSQL client. If you see authentication errors, verify that `<database_iam_token_username>` retains the `rds_iam` grant.
 
 ## 🎯 **Good luck and happy coding!** 🚀

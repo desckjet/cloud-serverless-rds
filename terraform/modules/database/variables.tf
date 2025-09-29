@@ -33,6 +33,36 @@ variable "multi_az" {
   type        = bool
 }
 
+variable "database_name" {
+  description = "Initial database name to create within the cluster."
+  type        = string
+  default     = "app"
+}
+
+variable "iam_database_username" {
+  description = "Database user that will leverage IAM authentication."
+  type        = string
+  default     = "iam_db_user"
+}
+
+variable "iam_token_username" {
+  description = "Database username dedicated for IAM token authentication."
+  type        = string
+  default     = "iam_token_user"
+}
+
+variable "serverless_min_capacity" {
+  description = "Aurora Serverless v2 minimum ACU capacity."
+  type        = number
+  default     = 0.5
+}
+
+variable "serverless_max_capacity" {
+  description = "Aurora Serverless v2 maximum ACU capacity."
+  type        = number
+  default     = 4
+}
+
 variable "tags" {
   description = "Tags to propagate to managed resources."
   type        = map(string)

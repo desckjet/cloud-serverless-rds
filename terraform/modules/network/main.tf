@@ -141,14 +141,13 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private[tostring(tonumber(each.key) % length(aws_route_table.private))].id
 }
 
-resource "aws_security_group" "shared" {
-  name   = "${var.name_prefix}-default-sg"
-  vpc_id = aws_vpc.this.id
-
-  description = "Shared security group for Lambda and database components"
+resource "aws_security_group" "compute" {
+  name        = "${var.name_prefix}-compute-sg"
+  description = "Security group for private compute resources (Lambda, EC2)"
+  vpc_id      = aws_vpc.this.id
 
   egress {
-    description = "Allow all outbound traffic from private workloads"
+    description = "Allow outbound traffic from compute workloads"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -156,6 +155,42 @@ resource "aws_security_group" "shared" {
   }
 
   tags = merge(local.module_tags, {
-    Name = "${var.name_prefix}-sg"
+    Name = "${var.name_prefix}-compute-sg"
+  })
+}
+
+resource "aws_security_group" "database" {
+  name        = "${var.name_prefix}-database-sg"
+  description = "Security group restricting database access to compute resources"
+  vpc_id      = aws_vpc.this.id
+
+  ingress {
+    description     = "PostgreSQL from compute security group"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.compute.id]
+  }
+
+  # Allows communication from RDS Proxy to the Aurora Instances
+  # Client → Compute SG → Database SG (Proxy) → Database SG (Aurora Instance)
+  ingress {
+    description = "PostgreSQL from database security group"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    self        = true
+  }
+
+  egress {
+    description = "Allow required outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(local.module_tags, {
+    Name = "${var.name_prefix}-database-sg"
   })
 }

@@ -20,12 +20,17 @@ output "lambda_subnet_ids" {
 
 output "lambda_security_group_ids" {
   description = "Security group IDs applied to the Lambda function."
-  value       = [aws_security_group.shared.id]
+  value       = [aws_security_group.compute.id]
 }
 
 output "database_security_group_ids" {
   description = "Security group IDs applied to the database backend."
-  value       = [aws_security_group.shared.id]
+  value       = [aws_security_group.database.id]
+}
+
+output "compute_security_group_id" {
+  description = "Security group for compute resources requiring outbound-only access."
+  value       = aws_security_group.compute.id
 }
 
 output "nat_gateway_ids" {

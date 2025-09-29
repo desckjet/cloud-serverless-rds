@@ -28,3 +28,8 @@ resource "aws_iam_role_policy_attachment" "ci_tester_managed" {
   role       = aws_iam_role.ci_tester.name
   policy_arn = each.value
 }
+
+resource "aws_iam_role_policy_attachment" "ci_tester_rds_connect" {
+  role       = aws_iam_role.ci_tester.name
+  policy_arn = module.database.iam_connect_policy_arn
+}

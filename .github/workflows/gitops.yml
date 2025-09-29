@@ -17,7 +17,7 @@ env:
   AWS_REGION: us-east-1
   TF_VAR_github_owner: ${{ github.repository_owner }}
   TF_VAR_github_repository: ${{ github.event.repository.name }}
-  TF_VAR_ci_tester_principals: '["${{ secrets.CI_TESTER_PRINCIPALS }}"]'
+  TF_VAR_ci_tester_principals: ${{ secrets.CI_TESTER_PRINCIPALS }}
 
 jobs:
   fmt-validate:
@@ -53,7 +53,7 @@ jobs:
 
       # Check configuration, references, errors, etc.
       - name: Terraform validate
-        run: terraform validate -no-color
+        run: terraform validate
 
       # - name: Setup TFLint
       #   uses: terraform-linters/setup-tflint@v4
@@ -102,7 +102,7 @@ jobs:
         run: terraform init -input=false
 
       - name: Terraform plan
-        run: terraform plan -input=false -no-color -out=tfplan
+        run: terraform plan -input=false -out=tfplan
 
       # - name: Terraform apply
       #   run: terraform apply -input=false -auto-approve tfplan

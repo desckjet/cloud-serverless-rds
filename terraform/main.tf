@@ -24,14 +24,19 @@ module "network" {
 module "database" {
   source = "./modules/database"
 
-  name_prefix        = local.name_prefix
-  vpc_id             = module.network.vpc_id
-  subnet_ids         = module.network.private_subnet_ids
-  security_group_ids = module.network.database_security_group_ids
-  instance_class     = var.db_instance_class
-  engine_version     = var.db_engine_version
-  multi_az           = var.enable_rds_multi_az
-  tags               = local.common_tags
+  name_prefix             = local.name_prefix
+  vpc_id                  = module.network.vpc_id
+  subnet_ids              = module.network.private_subnet_ids
+  security_group_ids      = module.network.database_security_group_ids
+  instance_class          = var.db_instance_class
+  engine_version          = var.db_engine_version
+  multi_az                = var.enable_rds_multi_az
+  database_name           = var.db_name
+  iam_database_username   = var.iam_database_username
+  iam_token_username      = var.iam_token_username
+  serverless_min_capacity = var.aurora_min_capacity
+  serverless_max_capacity = var.aurora_max_capacity
+  tags                    = local.common_tags
 }
 
 module "lambda" {
@@ -68,4 +73,15 @@ module "github_oidc" {
   create_oidc_provider       = var.create_github_oidc_provider
   existing_oidc_provider_arn = var.existing_github_oidc_provider_arn
   tags                       = local.common_tags
+}
+
+module "ec2_bastion" {
+  source = "./modules/ec2"
+
+  name_prefix        = local.name_prefix
+  subnet_id          = module.network.private_subnet_ids[0]
+  security_group_ids = [module.network.compute_security_group_id]
+  instance_type      = var.ec2_instance_type
+  iam_policies       = [module.database.iam_connect_policy_arn]
+  tags               = local.common_tags
 }
