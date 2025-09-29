@@ -17,7 +17,7 @@ env:
   AWS_REGION: us-east-1
   TF_VAR_github_owner: ${{ github.repository_owner }}
   TF_VAR_github_repository: ${{ github.event.repository.name }}
-  TF_VAR_ci_tester_principals: ${{ secrets.CI_TESTER_PRINCIPALS }}
+  TF_VAR_ci_tester_principals: '["${{ secrets.CI_TESTER_PRINCIPALS }}"]'
 
 jobs:
   fmt-validate:
