@@ -73,6 +73,11 @@ data "aws_iam_policy_document" "ci_minimal" {
       "ec2:CreateNatGateway",
       "ec2:DeleteNatGateway",
       "ec2:RunInstances",
+      "ec2:DetachInternetGateway",
+      "ec2:DisassociateAddress",
+      "ec2:CreateVpcEndpoint",
+      "ec2:DeleteVpcEndpoints",
+      "ec2:ReplaceRouteTableAssociation",
       "ec2:TerminateInstances"
     ]
     resources = ["*"]

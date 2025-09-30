@@ -54,13 +54,11 @@ variable "iam_token_username" {
 variable "serverless_min_capacity" {
   description = "Aurora Serverless v2 minimum ACU capacity."
   type        = number
-  default     = 0.5
 }
 
 variable "serverless_max_capacity" {
   description = "Aurora Serverless v2 maximum ACU capacity."
   type        = number
-  default     = 4
 }
 
 variable "tags" {

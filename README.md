@@ -1,89 +1,88 @@
-# 🚀 Cloud Infrastructure Engineer Challenge
+# Cloud Serverless RDS Infrastructure
 
-Welcome to the **Cloud Infrastructure Engineer Challenge!** 🎉 This challenge is designed to evaluate your ability to work with **Infrastructure as Code (IaC)**, AWS networking, IAM, and automation using modern DevOps practices.
+Infrastructure-as-code project that stands up an AWS environment for a serverless CRUD API backed by Aurora PostgreSQL. The stack is organised as reusable Terraform modules so environments can be spun up with minimal configuration.
 
-> [!NOTE]
-> You can use **any IaC tool of your choice** (Terraform preferred, but alternatives are allowed). If you choose a different tool or a combination of tools, **justify your decision!**
+## Architecture Overview
 
-## ⚡ Challenge Overview
+- **Networking** – Custom VPC with public and private subnets, Internet Gateway, NAT Gateways for outbound internet access from private subnets, and security groups tailored for database and Lambda communication.
+- **Aurora PostgreSQL** – Serverless v2 cluster exposed through an RDS Proxy so Lambdas can authenticate with IAM and keep warm connections.
+- **Lambda Functions** – Three Python handlers (`get`, `post`, `delete`) packaged with dependencies, deployed inside private subnets with internet access via NAT Gateway, and granted DB access through IAM policies and security groups.
+- **API Gateway** – Regional REST API that maps `/animals` methods to the Lambda functions using proxy integrations.
+- **GitHub OIDC & CI Role** – Allows GitHub Actions to assume an AWS role without static credentials; repository workflow runs `terraform fmt`, `validate`, `tflint`, and `tfsec`.
+- **EC2 Bastion** – SSM managed instance in private subnet for administrative access to Aurora when direct connectivity is needed.
 
-Your task is to deploy the following infrastructure on AWS:
+## Module Layout
 
-> 🎯 **Key Objectives:**
+```
+terraform/
+├─ main.tf                  # Composes environment from individual modules
+├─ modules/
+│  ├─ network/              # VPC, public/private subnets, IGW, NAT gateways, and security groups
+│  ├─ database/             # Aurora cluster, RDS Proxy, IAM permissions
+│  ├─ lambda/               # Packaging resources and Lambda functions
+│  ├─ api_gateway/          # REST API, routes, integrations, permissions
+│  ├─ github_oidc/          # OIDC provider, IAM role for CI
+│  └─ ec2/                  # Bastion instance for SSM access
+└─ ci_tester_role.tf        # Optional IAM role for manual validation
+```
 
-- **An API Gateway** with a single endpoint (`GET /info`).
-- **A Lambda function** triggered by the API Gateway.
-- **A database instance or application backend** running in a private subnet. This can be:
-  - A **PostgreSQL RDS instance** 📦
-  - A **self-hosted database** on an EC2 instance 🔗
-  - A **deployed application** such as WordPress hosted on EC2 🎨
-- **The Lambda function must connect** to the database/backend and return basic information about its connection and status.
-- **Logs from the Lambda** should be visible in CloudWatch 📊
-- **Networking must include:** VPC, public/private subnets, and security groups.
-- **The Lambda must be in a private subnet** and use a NAT Gateway in a public subnet for internet access 🌍
+## Prerequisites
 
-> [!IMPORTANT]
-> Ensure that your solution is modular, well-documented, and follows best practices for security and maintainability.
+- Terraform ≥ 1.13
+- AWS credentials with permissions to manage the services above
+- (Optional) `pre-commit`, `tflint`, and `tfsec` if you want the same linting locally
 
-## 📌 Requirements
+## Usage
 
-### ⚙️ Tech Stack
+1. Copy `terraform/terraform.tfvars.example` (if present) or edit `terraform/terraform.tfvars` with project-specific values such as GitHub repository details and IAM principals.
+2. Initialise Terraform and providers:
+   ```bash
+   cd terraform
+   terraform init
+   ```
+3. Review the execution plan:
+   ```bash
+   terraform plan -out=tfplan
+   ```
+4. Apply the infrastructure:
+   ```bash
+   terraform apply tfplan
+   ```
 
-> ⚡ **Must Include:**
+## Post-Deploy Verification
 
-- **IaC:** Any tool of your choice (**Terraform preferred**, but others are allowed if justified).
-- **AWS Services:** VPC, API Gateway, Lambda, CloudWatch, NAT Gateway, RDS or EC2.
+- Run `terraform output` to capture key identifiers (API invoke URL, Lambda names, RDS proxy endpoint, bastion instance ID).
+- Test the API Gateway endpoints using `curl`:
+  ```bash
+  INVOKE_URL=$(terraform output -raw api_gateway_invoke_url)
+  curl "$INVOKE_URL/animals"
+  curl -X POST "$INVOKE_URL/animals" -H 'Content-Type: application/json' \
+       -d '{"name":"lion","type":"mammal"}'
+  curl -X DELETE "$INVOKE_URL/animals?name=lion"
+  ```
+- Inspect CloudWatch logs for each Lambda (`/aws/lambda/<function-name>`) to confirm successful executions.
+- Use the SSM-managed bastion to forward a port to the Aurora proxy when direct SQL checks are required.
 
-### 📦 Deliverables
+## Local Development & CI
 
-> 📥 **Your submission must be a Pull Request that must include:**
+- The repository includes a GitHub Actions workflow at `.github/workflows/gitops.yml` that runs `terraform fmt`, `terraform validate`, `tflint`, and `tfsec` on pull requests.
+- Enable `pre-commit install` to mirror the same checks before committing.
+- Lambda source lives under `terraform/modules/lambda/src`; update the Python handlers and rerun `terraform apply` to publish new logic.
 
-- **An IaC module** that deploys the entire architecture.
-- **A `README.md`** with deployment instructions and tool selection justification.
-- **A working API Gateway endpoint** that responds with a JSON payload from the Lambda, including:
-  - Connection status to the database or backend.
-  - Basic metadata about the target system (e.g., DB version, instance type, WordPress version, etc.).
-- **CloudWatch logs** from the Lambda.
+## Cleanup
 
-> [!TIP]
-> Use the `docs` folder to store any additional documentation or diagrams that help explain your solution.
-> Mention any assumptions or constraints in your `README.md`.
+Destroy the environment when no longer needed to avoid ongoing AWS costs:
 
-## 🌟 Nice to Have
+```bash
+cd terraform
+terraform destroy
+```
 
-> 💡 **Bonus Points For:**
+## Future Enhancements
 
-- **Auto Scaling & High Availability**: Implementing **Multi-AZ for RDS** or an **Auto Scaling Group for EC2** to improve availability.
-- **Load Balancer or CloudFront**: Adding an **Application Load Balancer (ALB)** or **CloudFront** for distributing traffic efficiently.
-- **Backup & Disaster Recovery**: Implementing **automated backups for RDS** or **snapshot strategies**.
-- **GitHub Actions for validation**: Running **`terraform fmt`, `terraform validate`**, or equivalent for the chosen IaC tool.
-- **Pre-commit hooks**: Ensuring linting and security checks before committing.
-- **Monitoring & Logging**: Setting up **AWS CloudWatch Alarms for infrastructure health (e.g., RDS CPU usage, EC2 status)**.
-- **Docker for local testing**: Using Docker to **simulate infrastructure components** (e.g., a local PostgreSQL instance).
-
-> [!TIP]
-> Looking for inspiration or additional ideas to earn extra points? Check out our [Awesome NaNLABS repository](https://github.com/nanlabs/awesome-nan) for reference projects and best practices! 🚀
-
-## 📥 Submission Guidelines
-
-> 📌 **Follow these steps to submit your solution:**
-
-1. **Fork this repository.**
-2. **Create a feature branch** for your implementation.
-3. **Commit your changes** with meaningful commit messages.
-4. **Open a Pull Request** following the provided template.
-5. **Our team will review** and provide feedback.
-
-## ✅ Evaluation Criteria
-
-> 🔍 **What we'll be looking at:**
-
-- **Correctness and completeness** of the deployed **infrastructure**.
-- **Use of best practices for networking and security** (VPC, subnets, IAM).
-- **Scalability & High Availability considerations** (optional. e.g., Multi-AZ, Auto Scaling, Load Balancer).
-- **Backup & Disaster Recovery strategies** implemented (optional).
-- **CI/CD automation using GitHub Actions and pre-commit hooks** (optional).
-- **Documentation clarity**: Clear explanation of infrastructure choices and configurations.
+- Extend API Gateway routing to support nested resources or additional methods.
+- Add automated integration tests that invoke the endpoints after deployment.
+- Enable Aurora back-up policies and alarms for improved observability.
 
 ## 🛠 Development Workflow
 
@@ -128,5 +127,3 @@ Your task is to deploy the following infrastructure on AWS:
     --username <database_iam_token_username>
   ```
 - Use the token as the password in your PostgreSQL client. If you see authentication errors, verify that `<database_iam_token_username>` retains the `rds_iam` grant.
-
-## 🎯 **Good luck and happy coding!** 🚀

@@ -73,13 +73,13 @@ variable "iam_token_username" {
 variable "aurora_min_capacity" {
   description = "Aurora Serverless v2 minimum ACU capacity."
   type        = number
-  default     = 1
+  default     = 0.5
 }
 
 variable "aurora_max_capacity" {
   description = "Aurora Serverless v2 maximum ACU capacity."
   type        = number
-  default     = 4
+  default     = 2
 }
 
 variable "enable_rds_multi_az" {
