@@ -150,4 +150,15 @@ data "aws_iam_policy_document" "ci_minimal" {
     resources = ["*"]
   }
 
+  statement {
+    sid = "TerraformAPIGateway"
+    actions = [
+      "apigateway:PUT",
+      "apigateway:POST",
+      "apigateway:GET",
+      "apigateway:DELETE",
+    ]
+    resources = ["*"]
+  }
+
 }

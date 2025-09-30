@@ -3,20 +3,32 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "lambda_invoke_arn" {
-  description = "Invoke ARN of the Lambda integration."
-  type        = string
-}
-
-variable "lambda_function_name" {
-  description = "Name of the Lambda function for IAM permission attachments."
-  type        = string
-}
-
 variable "stage_name" {
   description = "Deployment stage name for the API Gateway."
   type        = string
   default     = "default"
+}
+
+variable "routes" {
+  description = "Map of route configurations to integrate HTTP methods with Lambda functions."
+  type = map(object({
+    path                 = string
+    method               = string
+    lambda_function_name = string
+    lambda_function_arn  = string
+  }))
+  default = {}
+
+  validation {
+    condition = alltrue([
+      for route in var.routes :
+      length([
+        for segment in split(trim(route.path, "/"), "/") : segment if segment != ""
+      ]) <= 1
+    ])
+    error_message = "Routes may include at most one path segment (e.g., '/animals'). Nested paths are not currently supported."
+  }
+
 }
 
 variable "tags" {

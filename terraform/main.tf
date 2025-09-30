@@ -54,14 +54,33 @@ module "lambda" {
   tags                          = local.common_tags
 }
 
-# module "api_gateway" {
-#   source = "./modules/api_gateway"
+module "api_gateway" {
+  source = "./modules/api_gateway"
 
-#   name_prefix          = local.name_prefix
-#   lambda_invoke_arn    = module.lambda.function_arn
-#   lambda_function_name = module.lambda.function_name
-#   tags                 = local.common_tags
-# }
+  name_prefix = local.name_prefix
+  stage_name  = var.environment
+  routes = {
+    animals_get = {
+      path                 = "/animals"
+      method               = "GET"
+      lambda_function_name = module.lambda.function_names["get"]
+      lambda_function_arn  = module.lambda.function_arns["get"]
+    }
+    animals_post = {
+      path                 = "/animals"
+      method               = "POST"
+      lambda_function_name = module.lambda.function_names["post"]
+      lambda_function_arn  = module.lambda.function_arns["post"]
+    }
+    animals_delete = {
+      path                 = "/animals"
+      method               = "DELETE"
+      lambda_function_name = module.lambda.function_names["delete"]
+      lambda_function_arn  = module.lambda.function_arns["delete"]
+    }
+  }
+  tags = local.common_tags
+}
 
 module "github_oidc" {
   source = "./modules/github_oidc"

@@ -32,7 +32,7 @@ def _generate_auth_token(host: str, port: int, username: str) -> str:
             DBUsername=username,
             Region=_region(),
         )
-    except (ClientError, BotoCoreError) as exc:  # pragma: no cover
+    except (ClientError, BotoCoreError) as exc:
         raise DatabaseError(f"Failed to generate IAM auth token: {exc}") from exc
 
 
