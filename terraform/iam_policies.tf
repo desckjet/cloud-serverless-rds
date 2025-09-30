@@ -130,4 +130,24 @@ data "aws_iam_policy_document" "ci_minimal" {
     ]
     resources = ["*"]
   }
+
+  statement {
+    sid = "TerraformLambda"
+    actions = [
+      "lambda:InvokeFunction",
+      "lambda:GetFunction",
+      "lambda:ListFunctions",
+      "lambda:CreateFunction",
+      "lambda:UpdateFunctionCode",
+      "lambda:UpdateFunctionConfiguration",
+      "lambda:DeleteFunction",
+      "lambda:AddPermission",
+      "lambda:RemovePermission",
+      "lambda:TagResource",
+      "lambda:PutFunctionConcurrency",
+      "lambda:UntagResource"
+    ]
+    resources = ["*"]
+  }
+
 }

@@ -151,14 +151,18 @@ resource "aws_db_proxy" "this" {
 
   auth {
     auth_scheme = "SECRETS"
+    # Enable IAM authentication
     iam_auth    = "REQUIRED"
     secret_arn  = aws_rds_cluster.this.master_user_secret[0].secret_arn
+    description = "Cluster master credential"
   }
 
   auth {
     auth_scheme = "SECRETS"
+    # Enable IAM authentication
     iam_auth    = "REQUIRED"
     secret_arn  = aws_secretsmanager_secret.iam_token_user.arn
+    description = "Additional application credential"
   }
 
   tags = merge(local.module_tags, {
@@ -167,8 +171,10 @@ resource "aws_db_proxy" "this" {
 }
 
 locals {
-  proxy_resource_name = try(regex("db-proxy:(prx-[a-z0-9]+)$", aws_db_proxy.this.arn)[0], aws_db_proxy.this.name)
-  proxy_rds_resource  = "dbi:${local.proxy_resource_name}"
+  proxy_resource_id = try(
+    regex("db-proxy:(prx-[a-z0-9]+)$", aws_db_proxy.this.arn)[0],
+    element(reverse(split(":", aws_db_proxy.this.arn)), 0)
+  )
 }
 
 resource "aws_db_proxy_default_target_group" "this" {
@@ -199,7 +205,7 @@ resource "aws_iam_policy" "rds_connect" {
         Action = ["rds-db:connect"],
         Resource = [
           "arn:aws:rds-db:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:dbuser:${aws_rds_cluster.this.cluster_resource_id}/${var.iam_token_username}",
-          "arn:aws:rds-db:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:dbuser:${local.proxy_rds_resource}/${var.iam_token_username}"
+          "arn:aws:rds-db:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:dbuser:${local.proxy_resource_id}/${var.iam_token_username}"
         ]
       }
     ]

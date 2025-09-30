@@ -42,22 +42,26 @@ module "database" {
 module "lambda" {
   source = "./modules/lambda"
 
-  name_prefix          = local.name_prefix
-  subnet_ids           = module.network.lambda_subnet_ids
-  security_group_ids   = module.network.lambda_security_group_ids
-  database_credentials = module.database.credentials_secret_arn
-  vpc_id               = module.network.vpc_id
-  tags                 = local.common_tags
+  name_prefix                   = local.name_prefix
+  subnet_ids                    = module.network.lambda_subnet_ids
+  database_proxy_endpoint       = module.database.proxy_endpoint
+  database_name                 = var.db_name
+  database_username             = module.database.iam_token_username
+  database_security_group_id    = module.network.database_security_group_ids[0]
+  additional_security_group_ids = module.network.lambda_security_group_ids
+  vpc_id                        = module.network.vpc_id
+  iam_policy_arns               = [module.database.iam_connect_policy_arn]
+  tags                          = local.common_tags
 }
 
-module "api_gateway" {
-  source = "./modules/api_gateway"
+# module "api_gateway" {
+#   source = "./modules/api_gateway"
 
-  name_prefix          = local.name_prefix
-  lambda_invoke_arn    = module.lambda.function_arn
-  lambda_function_name = module.lambda.function_name
-  tags                 = local.common_tags
-}
+#   name_prefix          = local.name_prefix
+#   lambda_invoke_arn    = module.lambda.function_arn
+#   lambda_function_name = module.lambda.function_name
+#   tags                 = local.common_tags
+# }
 
 module "github_oidc" {
   source = "./modules/github_oidc"

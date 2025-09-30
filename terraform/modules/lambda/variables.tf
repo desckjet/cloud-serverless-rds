@@ -4,18 +4,8 @@ variable "name_prefix" {
 }
 
 variable "subnet_ids" {
-  description = "Subnets where the Lambda function will run."
+  description = "Private subnets where the Lambda functions will run."
   type        = list(string)
-}
-
-variable "security_group_ids" {
-  description = "Security groups attached to the Lambda function."
-  type        = list(string)
-}
-
-variable "database_credentials" {
-  description = "ARN of the secret containing database credentials."
-  type        = string
 }
 
 variable "vpc_id" {
@@ -23,22 +13,48 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "runtime" {
-  description = "Runtime to use for the Lambda function."
+variable "database_proxy_endpoint" {
+  description = "Hostname of the RDS proxy for database connectivity."
   type        = string
-  default     = "python3.11"
 }
 
-variable "handler" {
-  description = "Handler entrypoint for the Lambda function."
+variable "database_name" {
+  description = "Logical database name to target within the cluster."
   type        = string
-  default     = "handler.lambda_handler"
+}
+
+variable "database_username" {
+  description = "Database username used for IAM-authenticated connections."
+  type        = string
+}
+
+variable "database_security_group_id" {
+  description = "Security group protecting the database, used to create ingress rules for Lambda."
+  type        = string
+}
+
+variable "additional_security_group_ids" {
+  description = "Optional security groups to attach alongside the managed Lambda security groups."
+  type        = list(string)
+  default     = []
+}
+
+variable "iam_policy_arns" {
+  description = "Additional IAM policy ARNs to attach to the Lambda execution role."
+  type        = list(string)
+  default     = []
+}
+
+variable "runtime" {
+  description = "Runtime to use for the Lambda function package."
+  type        = string
+  default     = "python3.13"
 }
 
 variable "memory_size" {
   description = "Lambda memory allocation in MB."
   type        = number
-  default     = 256
+  default     = 128
 }
 
 variable "timeout" {

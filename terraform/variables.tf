@@ -130,7 +130,8 @@ variable "ci_managed_policy_arns" {
     "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
     "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess",
     "arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess",
-    "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+    "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess",
+    "arn:aws:iam::aws:policy/AWSLambda_ReadOnlyAccess"
   ]
 }
 
