@@ -98,6 +98,19 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: terraform-cicd
 
+      # Set up Python required for building Lambda package with dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      # Pre-create build directories to avoid Terraform error during plan
+      # The archive_file data source needs the directory to exist before planning
+      - name: Pre-create Lambda build directories
+        run: |
+          mkdir -p modules/lambda/build/package
+          touch modules/lambda/build/package/.gitkeep
+
       - name: Terraform init
         run: terraform init -input=false
 
