@@ -3,8 +3,11 @@ data "aws_iam_policy_document" "ci_minimal" {
     sid = "TerraformStateBucket"
 
     actions = [
+      "s3:GetObject",
       "s3:PutObject",
-      "s3:DeleteObject"
+      "s3:DeleteObject",
+      "s3:GetBucketPolicy",
+      "s3:ListBucket"
     ]
 
     resources = [
@@ -33,7 +36,10 @@ data "aws_iam_policy_document" "ci_minimal" {
       "iam:DeletePolicy",
       "iam:CreatePolicyVersion",
       "iam:UpdateRole",
-      "iam:DeletePolicyVersion"
+      "iam:DeletePolicyVersion",
+      "iam:CreateOpenIDConnectProvider",
+      "iam:DeleteOpenIDConnectProvider",
+      "iam:UpdateOpenIDConnectProviderThumbprint"
     ]
     resources = ["*"]
   }

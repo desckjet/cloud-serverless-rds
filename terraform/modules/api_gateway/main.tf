@@ -71,7 +71,7 @@ resource "aws_api_gateway_integration" "lambda" {
   uri = format(
     "arn:%s:apigateway:%s:lambda:path/2015-03-31/functions/%s/invocations",
     data.aws_partition.current.partition,
-    data.aws_region.current.name,
+    data.aws_region.current.id,
     local.normalized_routes[each.key].lambda_function_arn
   )
 }

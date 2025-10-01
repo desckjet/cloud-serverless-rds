@@ -204,8 +204,8 @@ resource "aws_iam_policy" "rds_connect" {
         Effect = "Allow",
         Action = ["rds-db:connect"],
         Resource = [
-          "arn:aws:rds-db:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:dbuser:${aws_rds_cluster.this.cluster_resource_id}/${var.iam_token_username}",
-          "arn:aws:rds-db:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:dbuser:${local.proxy_resource_id}/${var.iam_token_username}"
+          "arn:aws:rds-db:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:dbuser:${aws_rds_cluster.this.cluster_resource_id}/${var.iam_token_username}",
+          "arn:aws:rds-db:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:dbuser:${local.proxy_resource_id}/${var.iam_token_username}"
         ]
       }
     ]
