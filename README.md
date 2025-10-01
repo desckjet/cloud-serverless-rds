@@ -1,88 +1,365 @@
-# 🚀 Cloud Infrastructure Engineer Challenge
+# Cloud Serverless RDS Infrastructure
 
-Welcome to the **Cloud Infrastructure Engineer Challenge!** 🎉 This challenge is designed to evaluate your ability to work with **Infrastructure as Code (IaC)**, AWS networking, IAM, and automation using modern DevOps practices.
+Infrastructure-as-code project that stands up an AWS environment for a serverless CRUD API backed by Aurora PostgreSQL. The stack is organised as reusable Terraform modules so environments can be spun up with minimal configuration.
 
-> [!NOTE]
-> You can use **any IaC tool of your choice** (Terraform preferred, but alternatives are allowed). If you choose a different tool or a combination of tools, **justify your decision!**
+## Architecture Diagram
 
-## ⚡ Challenge Overview
+![Architecture Diagram](https://github.com/desckjet/cloud-serverles-rds/blob/feature/architecture-diagram.png)
 
-Your task is to deploy the following infrastructure on AWS:
+## Architecture Overview
 
-> 🎯 **Key Objectives:**
+- **Networking** – Custom VPC with public and private subnets, Internet Gateway, NAT Gateways for outbound internet access from private subnets, and security groups tailored for database and Lambda communication.
+- **Aurora PostgreSQL** – Serverless v2 cluster exposed through an RDS Proxy so Lambdas can authenticate with IAM and keep warm connections.
+- **Lambda Functions** – Three Python handlers (`get`, `post`, `delete`) packaged with dependencies, deployed inside private subnets with internet access via NAT Gateway, and granted DB access through IAM policies and security groups.
+- **API Gateway** – Regional REST API that maps `/animals` methods to the Lambda functions using proxy integrations.
+- **GitHub OIDC & CI Role** – Allows GitHub Actions to assume an AWS role without static credentials; repository workflow runs `terraform fmt`, `validate`, `tflint`, and `tfsec`.
+- **EC2 Bastion** – SSM managed instance in private subnet for administrative access to Aurora when direct connectivity is needed.
 
-- **An API Gateway** with a single endpoint (`GET /info`).
-- **A Lambda function** triggered by the API Gateway.
-- **A database instance or application backend** running in a private subnet. This can be:
-  - A **PostgreSQL RDS instance** 📦
-  - A **self-hosted database** on an EC2 instance 🔗
-  - A **deployed application** such as WordPress hosted on EC2 🎨
-- **The Lambda function must connect** to the database/backend and return basic information about its connection and status.
-- **Logs from the Lambda** should be visible in CloudWatch 📊
-- **Networking must include:** VPC, public/private subnets, and security groups.
-- **The Lambda must be in a private subnet** and use a NAT Gateway in a public subnet for internet access 🌍
+## IAM Roles Overview
 
-> [!IMPORTANT]
-> Ensure that your solution is modular, well-documented, and follows best practices for security and maintainability.
+This infrastructure creates several IAM roles with specific purposes and permissions:
 
-## 📌 Requirements
+### **🤖 `cloud-serverless-rds-dev-github-actions`**
+- **Purpose**: GitHub Actions CI/CD automation via OIDC
+- **Permissions**: Deploy and manage infrastructure through Terraform
+- **Trust Policy**: GitHub OIDC provider (`token.actions.githubusercontent.com`)
+- **Usage**: Automated deployments, infrastructure updates
 
-### ⚙️ Tech Stack
+### **🔧 `cloud-serverless-rds-dev-ci-tester`**
+- **Purpose**: Local testing and administrative tasks
+- **Permissions**: Limited access for safe local Terraform operations
+- **Trust Policy**: Configurable principals (users/roles that can assume this role)
+- **Usage**: Manual testing, troubleshooting, development validation
+- **Configuration**: Set `ci_tester_principals` in `terraform.tfvars` with ARNs of users/roles allowed to assume this role
 
-> ⚡ **Must Include:**
+### **⚡ `cloud-serverless-rds-dev-lambda-role`**
+- **Purpose**: Execution role for Lambda functions
+- **Permissions**: VPC access, CloudWatch logs, RDS Proxy connection
+- **Trust Policy**: Lambda service (`lambda.amazonaws.com`)
+- **Usage**: Runtime execution of API handlers (get, post, delete)
 
-- **IaC:** Any tool of your choice (**Terraform preferred**, but others are allowed if justified).
-- **AWS Services:** VPC, API Gateway, Lambda, CloudWatch, NAT Gateway, RDS or EC2.
+### **🖥️ `cloud-serverless-rds-dev-ec2-role`**
+- **Purpose**: EC2 bastion instance role
+- **Permissions**: SSM Session Manager, RDS connection
+- **Trust Policy**: EC2 service (`ec2.amazonaws.com`)
+- **Usage**: Administrative access to Aurora via SSM port forwarding
 
-### 📦 Deliverables
+### **🗄️ `cloud-serverless-rds-dev-db-proxy-role`**
+- **Purpose**: RDS Proxy service role
+- **Permissions**: Access to Secrets Manager for database credentials
+- **Trust Policy**: RDS service (`rds.amazonaws.com`)
+- **Usage**: Manages connection pooling and IAM authentication to Aurora
 
-> 📥 **Your submission must be a Pull Request that must include:**
+## Module Layout
 
-- **An IaC module** that deploys the entire architecture.
-- **A `README.md`** with deployment instructions and tool selection justification.
-- **A working API Gateway endpoint** that responds with a JSON payload from the Lambda, including:
-  - Connection status to the database or backend.
-  - Basic metadata about the target system (e.g., DB version, instance type, WordPress version, etc.).
-- **CloudWatch logs** from the Lambda.
+```
+terraform/
+├─ main.tf                  # Composes environment from individual modules
+├─ modules/
+│  ├─ network/              # VPC, public/private subnets, IGW, NAT gateways, and security groups
+│  ├─ database/             # Aurora cluster, RDS Proxy, IAM permissions
+│  ├─ lambda/               # Packaging resources and Lambda functions
+│  ├─ api_gateway/          # REST API, routes, integrations, permissions
+│  ├─ github_oidc/          # OIDC provider, IAM role for CI
+│  └─ ec2/                  # Bastion instance for SSM access
+└─ ci_tester_role.tf        # Optional IAM role for manual validation
+```
 
-> [!TIP]
-> Use the `docs` folder to store any additional documentation or diagrams that help explain your solution.
-> Mention any assumptions or constraints in your `README.md`.
+## Prerequisites
 
-## 🌟 Nice to Have
+- Terraform ≥ 1.13
+- AWS credentials with permissions to manage the services above
+- (Optional) `pre-commit`, `tflint`, and `tfsec` if you want the same linting locally
 
-> 💡 **Bonus Points For:**
+## Usage
 
-- **Auto Scaling & High Availability**: Implementing **Multi-AZ for RDS** or an **Auto Scaling Group for EC2** to improve availability.  
-- **Load Balancer or CloudFront**: Adding an **Application Load Balancer (ALB)** or **CloudFront** for distributing traffic efficiently.  
-- **Backup & Disaster Recovery**: Implementing **automated backups for RDS** or **snapshot strategies**.  
-- **GitHub Actions for validation**: Running **`terraform fmt`, `terraform validate`**, or equivalent for the chosen IaC tool.  
-- **Pre-commit hooks**: Ensuring linting and security checks before committing.  
-- **Monitoring & Logging**: Setting up **AWS CloudWatch Alarms for infrastructure health (e.g., RDS CPU usage, EC2 status)**.  
-- **Docker for local testing**: Using Docker to **simulate infrastructure components** (e.g., a local PostgreSQL instance).
+### Initial Setup
 
-> [!TIP]
-> Looking for inspiration or additional ideas to earn extra points? Check out our [Awesome NaNLABS repository](https://github.com/nanlabs/awesome-nan) for reference projects and best practices! 🚀
+**Prerequisites**: Use AWS credentials from a user with admin permissions to create the backend, OIDC provider, and ci-tester role.
 
-## 📥 Submission Guidelines
+1. **Configure AWS Admin Profile and Project Variables**:
+   ```bash
+   # Configure admin profile (replace with your admin user info)
+   aws configure --profile your-admin-user
+   # Enter your Access Key ID, Secret Access Key, region (us-east-1), output format (json)
+   ```
 
-> 📌 **Follow these steps to submit your solution:**
+   Copy `terraform/terraform.tfvars.example` with project-specific values such as GitHub repository details and IAM principals.
 
-1. **Fork this repository.**
-2. **Create a feature branch** for your implementation.
-3. **Commit your changes** with meaningful commit messages.
-4. **Open a Pull Request** following the provided template.
-5. **Our team will review** and provide feedback.
+2. **Create Terraform Backend** (S3 bucket for state):
+   ```bash
+   cd terraform
 
-## ✅ Evaluation Criteria
+   # Comment out the S3 backend in terraform/versions.tf
+   # (Comment the entire backend "s3" block)
 
-> 🔍 **What we'll be looking at:**
+   # Initialize without backend
+   terraform init -backend=false
 
-- **Correctness and completeness** of the deployed **infrastructure**.  
-- **Use of best practices for networking and security** (VPC, subnets, IAM).  
-- **Scalability & High Availability considerations** (optional. e.g., Multi-AZ, Auto Scaling, Load Balancer).  
-- **Backup & Disaster Recovery strategies** implemented (optional).  
-- **CI/CD automation using GitHub Actions and pre-commit hooks** (optional).  
-- **Documentation clarity**: Clear explanation of infrastructure choices and configurations.
+   # Plan and create only the S3 backend resources
+   terraform plan -target=aws_s3_bucket.tf_state \
+                  -target=aws_s3_bucket_public_access_block.tf_state \
+                  -target=aws_s3_bucket_versioning.tf_state \
+                  -target=aws_s3_bucket_server_side_encryption_configuration.tf_state \
+                  -out=backend-plan
+   terraform apply backend-plan
 
-## 🎯 **Good luck and happy coding!** 🚀
+   # Uncomment the backend in terraform/versions.tf
+   # Reconfigure to use the S3 backend
+   terraform init -reconfigure
+   ```
+
+3. **Create GitHub OIDC Provider**:
+   ```bash
+   # Deploy the OIDC provider first (needed for GitHub Actions)
+   terraform plan -target=module.github_oidc -out=oidc-plan
+   terraform apply oidc-plan
+
+   # Get the GitHub Actions role ARN
+   terraform output -raw github_actions_role_arn
+   ```
+
+4. **Configure GitHub Repository Secrets**:
+
+   Go to GitHub → Repository Settings → Secrets and variables → Actions
+
+   **Secret 1:**
+   - Click "New repository secret"
+   - Name: `AWS_GITHUB_ROLE_ARN`
+   - Value: Use the ARN from step 3
+
+   **Secret 2:**
+   - Click "New repository secret"
+   - Name: `CI_TESTER_PRINCIPALS`
+   - Value: Use the ARN of your admin account (same as terraform.tfvars)
+
+5. **Create CI Tester Role**:
+   ```bash
+   # Create the testing role with limited permissions
+   terraform plan -target=aws_iam_role.ci_tester \
+                  -target=aws_iam_role_policy.ci_tester_inline \
+                  -target=aws_iam_role_policy_attachment.ci_tester_managed \
+                  -target=aws_iam_role_policy_attachment.ci_tester_rds_connect \
+                  -out=ci-tester-plan
+   terraform apply ci-tester-plan
+   ```
+
+6. **Configure AWS Profile for CI Tester Role**:
+
+   Add the ci-tester profile to your AWS config file (`~/.aws/config`):
+   ```ini
+   [profile cloud-serverless-rds-ci-tester]
+   role_arn = arn:aws:iam::YOUR-ACCOUNT-ID:role/cloud-serverless-rds-dev-ci-tester
+   source_profile = your-admin-user
+   region = us-east-1
+   # Just in case you have configured MFA
+   # mfa_serial = arn:aws:iam::YOUR-ACCOUNT-ID:mfa/your-admin-user
+   ```
+
+7. **Switch to CI Tester Role** (No more admin credentials needed):
+   ```bash
+   # Export credentials for the ci-tester role
+   aws configure export-credentials --profile cloud-serverless-rds-ci-tester --format env
+
+   # Or set the profile for Terraform
+   export AWS_PROFILE=cloud-serverless-rds-ci-tester
+   ```
+
+8. **Deploy remaining infrastructure** (using ci-tester role):
+   ```bash
+   terraform plan -out=tfplan
+   terraform apply tfplan
+   ```
+
+## Post-Deploy Verification
+
+- Run `terraform output` to capture key identifiers (API invoke URL, Lambda names, RDS proxy endpoint, bastion instance ID).
+- Test the API Gateway endpoints using `curl`:
+  ```bash
+  INVOKE_URL=$(terraform output -raw api_gateway_invoke_url)
+
+  # GET all animals
+  curl "$INVOKE_URL/animals"
+
+  # POST create a new animal (send JSON directly in body)
+  curl -X POST "$INVOKE_URL/animals" -H 'Content-Type: application/json' \
+       -d '{"name":"Lion","weight":400.00,"height":350.00}'
+
+  # DELETE an animal by name (can use body or query parameter)
+  curl -X DELETE "$INVOKE_URL/animals" -H 'Content-Type: application/json' \
+       -d '{"name":"Lion"}'
+
+  # Alternative DELETE using query parameter
+  curl -X DELETE "$INVOKE_URL/animals?name=Lion"
+  ```
+
+
+## Local Development & CI
+
+- The repository includes a GitHub Actions workflow at `.github/workflows/gitops.yml` that runs `terraform fmt`, `terraform validate`, `tflint`, and `tfsec` on pull requests.
+- Enable `pre-commit install` to mirror the same checks before committing.
+- Lambda source lives under `terraform/modules/lambda/src`; update the Python handlers and rerun `terraform apply` to publish new logic.
+
+## Cleanup
+
+Destroy the environment when no longer needed to avoid ongoing AWS costs:
+
+```bash
+cd terraform
+terraform destroy
+```
+
+
+## 🛠 Development Workflow
+
+- Install the tooling once (`brew install pre-commit tflint tfsec libpq` or use the official binaries/pip) and link the PostgreSQL client (`brew link --force libpq`).
+- Install the Session Manager plugin for AWS CLI (`brew install --cask session-manager-plugin`) to enable SSM port forwarding.
+- Enable the hooks with `pre-commit install`; they enforce `terraform fmt`, `terraform validate`, `tflint` and `tfsec` before every commit.
+- Run `pre-commit run --all-files` or `terraform fmt -recursive` locally to check formatting on demand.
+
+
+## 🔐 Accessing Aurora via SSM Bastion
+
+- Terraform provisions a private EC2 instance (SSM managed) and an Aurora PostgreSQL Serverless v2 cluster fronted by an RDS Proxy with IAM authentication.
+- After deployment, retrieve outputs:
+  ```bash
+  terraform output ec2_instance_id
+  terraform output database_cluster_endpoint
+  terraform output database_master_username
+  terraform output database_iam_token_username
+  ```
+- Establish an SSM port forwarding session against the cluster when you need to execute administrative commands:
+  ```bash
+  aws ssm start-session \
+    --target <ec2_instance_id> \
+    --document-name AWS-StartPortForwardingSessionToRemoteHost \
+    --parameters '{"host":["<cluster-endpoint>"],"portNumber":["5432"],"localPortNumber":["5432"]}' \
+    --region us-east-1
+  ```
+
+- **Connect to the cluster** (run this in a new terminal while SSM session is active):
+  ```bash
+  cd terraform
+
+  # Get the master password from Secrets Manager
+  SECRET_ARN=$(terraform output -raw database_credentials_secret_arn)
+
+  MASTER_PASS=$(aws secretsmanager get-secret-value \
+    --secret-id "$SECRET_ARN" \
+    --version-stage AWSCURRENT \
+    --region us-east-1 \
+    --query SecretString \
+    --output text | jq -r '.password')
+
+  # Connect using master credentials (for initial setup)
+  PGPASSWORD="$MASTER_PASS" PGSSLMODE=require \
+  psql "host=127.0.0.1 port=5432 dbname=app user=iam_db_user"
+  ```
+
+- **Setup database user, permissions, table and password** (one-time setup):
+  ```sql
+  -- Create IAM-enabled user
+  CREATE USER iam_token_user WITH LOGIN;
+
+  -- Grant database and schema permissions
+  GRANT CONNECT ON DATABASE app TO iam_token_user;
+  GRANT USAGE ON SCHEMA public TO iam_token_user;
+  GRANT ALL PRIVILEGES ON SCHEMA public TO iam_token_user;
+  GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO iam_token_user;
+
+  -- Create the animals table
+  CREATE TABLE IF NOT EXISTS animals (
+    name   TEXT PRIMARY KEY,
+    weight NUMERIC(6,2) NOT NULL CHECK (weight > 0),
+    height NUMERIC(6,2) NOT NULL CHECK (height > 0)
+  );
+
+  -- Set password for the user (replace <PASSWORD> with actual password from Secrets Manager for iam_token_user)
+  ALTER ROLE iam_token_user WITH LOGIN PASSWORD '<PASSWORD>';
+  ```
+
+- **Verify connection with iam_token_user** (test the setup):
+  ```bash
+  # Exit the current psql session (Ctrl+D or \q)
+  # Then reconnect using the iam_token_user credentials
+  PGPASSWORD='<PASSWORD>' PGSSLMODE=require \
+  psql "host=127.0.0.1 port=5432 dbname=app user=iam_token_user"
+
+  # Test basic operations
+  \dt  # List tables
+  SELECT * FROM animals;  # Query the table
+  INSERT INTO animals (name, weight, height) VALUES ('TestAnimal', 100.50, 200.75);
+  \q   # Exit
+  ```
+
+- **Test IAM Authentication via RDS Proxy** (validate IAM token authentication):
+  ```bash
+  # Get the proxy endpoint and instance ID
+  PROXY_ENDPOINT=$(terraform output -raw database_proxy_endpoint)
+  INSTANCE_ID=$(terraform output -raw ec2_instance_id)
+
+  # Start SSM port forwarding to the RDS Proxy
+  aws ssm start-session \
+    --target $INSTANCE_ID \
+    --document-name AWS-StartPortForwardingSessionToRemoteHost \
+    --parameters "{\"host\":[\"$PROXY_ENDPOINT\"],\"portNumber\":[\"5432\"],\"localPortNumber\":[\"5432\"]}" \
+    --region us-east-1
+  ```
+
+  In a new terminal (while SSM session is active):
+  ```bash
+  cd terraform
+
+  # Generate IAM authentication token for the proxy
+  PROXY_ENDPOINT=$(terraform output -raw database_proxy_endpoint)
+
+  TOKEN=$(aws rds generate-db-auth-token \
+    --hostname $PROXY_ENDPOINT \
+    --port 5432 \
+    --region us-east-1 \
+    --username iam_token_user)
+
+  echo "Generated IAM token: $TOKEN"
+
+  # Connect using IAM token authentication
+  PGPASSWORD="$TOKEN" PGSSLMODE=require \
+  psql "host=127.0.0.1 port=5432 dbname=app user=iam_token_user"
+
+  # Test operations to verify IAM auth works
+  SELECT current_user;
+  SELECT * FROM animals;
+  \q
+  ```
+
+## Future Enhancements
+
+- **Implement VPC Endpoints for private networking**: Replace public subnets, Internet Gateway, and NAT Gateways with VPC Endpoints for AWS services (S3, Secrets Manager, SSM, etc.). This would eliminate internet access requirements and improve security by keeping all traffic within the AWS network backbone.
+
+- **Enhanced monitoring and observability**:
+  - CloudWatch dashboards for Lambda, RDS, and API Gateway metrics
+  - Custom CloudWatch alarms for error rates, latency, and resource utilization
+  - X-Ray tracing for end-to-end request tracking across Lambda functions
+  - CloudWatch Insights queries for log analysis
+
+- **Security hardening**:
+  - AWS WAF integration with API Gateway for DDoS protection and request filtering
+  - Secrets rotation automation for database credentials
+  - VPC Flow Logs for network traffic analysis
+
+- **Performance optimization**:
+  - Lambda provisioned concurrency for consistent performance
+  - RDS Performance Insights for database query optimization
+  - API Gateway caching for frequently accessed endpoints
+  - Lambda layer implementation for shared dependencies
+
+- **Disaster recovery and backup**:
+  - Automated database snapshots with lifecycle policies
+
+- **DevOps and automation improvements**:
+  - Automated integration tests that invoke the endpoints after deployment
+  - Blue/green deployment strategy for zero-downtime updates
+  - Canary deployments for Lambda functions
+
+- **Cost optimization**:
+  - S3 lifecycle policies for Terraform state and logs
+  - Reserved capacity planning for predictable workloads (Savings plan)

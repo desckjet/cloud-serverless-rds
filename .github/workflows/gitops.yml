@@ -1,0 +1,132 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches: [ main, feature, develop ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/gitops.yml'
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/gitops.yml'
+  workflow_dispatch:
+
+env:
+  TERRAFORM_DIR: terraform
+  AWS_REGION: us-east-1
+  TF_VAR_github_owner: ${{ github.repository_owner }}
+  TF_VAR_github_repository: ${{ github.event.repository.name }}
+  TF_VAR_ci_tester_principals: '["${{ secrets.CI_TESTER_PRINCIPALS }}"]'
+
+jobs:
+  fmt-validate:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.TERRAFORM_DIR }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+
+      - name: Cache Terraform plugin directory
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: terraform-${{ runner.os }}-${{ hashFiles(format('{0}/.terraform.lock.hcl', env.TERRAFORM_DIR)) }}
+          restore-keys: |
+            terraform-${{ runner.os }}-
+
+      # Check indentation, spaces, etc.
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init
+        run: terraform init -backend=false -input=false
+
+      # Check configuration, references, errors, etc.
+      - name: Terraform validate
+        run: terraform validate
+
+      # - name: Setup TFLint
+      #   uses: terraform-linters/setup-tflint@v4
+
+      # - name: TFLint
+      #   run: |
+      #     tflint --init
+      #     tflint
+
+      # - name: Setup tfsec
+      #   uses: aquasecurity/setup-tfsec@v1
+
+      # - name: tfsec
+      #   run: tfsec --tfvars-file terraform.tfvars .
+
+  deploy:
+    needs: fmt-validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature')
+
+    permissions:
+      id-token: write
+      contents: read
+
+    defaults:
+      run:
+        working-directory: ${{ env.TERRAFORM_DIR }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: terraform-cicd
+
+      # Set up Python required for building Lambda package with dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      # Verify Python setup and upgrade pip
+      - name: Verify Python setup
+        run: |
+          echo "Verifying Python setup..."
+          which python3
+          python3 --version
+          python3 -m pip --version
+          echo "Upgrading pip..."
+          python3 -m pip install --upgrade pip
+          echo "Python setup verified successfully"
+
+      # Pre-create build directories to avoid Terraform error during plan
+      # The archive_file data source needs the directory to exist before planning
+      - name: Pre-create Lambda build directories
+        run: |
+          mkdir -p modules/lambda/build/package
+          touch modules/lambda/build/package/.gitkeep
+
+      - name: Terraform init
+        run: terraform init -input=false
+
+      - name: Terraform plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform apply
+        run: terraform apply -input=false -auto-approve tfplan

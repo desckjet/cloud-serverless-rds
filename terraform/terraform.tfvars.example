@@ -1,0 +1,13 @@
+github_owner      = "<github repo owner>"
+github_repository = "<github repository name>"
+
+# CI Tester Role Configuration
+# This role is designed for local development, testing, and administrative tasks
+# It provides necessary permissions to run Terraform operations, connect to RDS via SSM,
+# and perform infrastructure validation without full admin privileges
+#
+# IMPORTANT: The role requires a trust relationship with your IAM user/role
+# Example ARN formats:
+# - IAM User: "arn:aws:iam::123456789012:user/your-username"
+# - IAM Role: "arn:aws:iam::123456789012:role/your-role-name"
+ci_tester_principals = ["ARN of user who can assume other roles"]
