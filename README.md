@@ -335,8 +335,6 @@ terraform destroy
 
 - **Implement VPC Endpoints for private networking**: Replace public subnets, Internet Gateway, and NAT Gateways with VPC Endpoints for AWS services (S3, Secrets Manager, SSM, etc.). This would eliminate internet access requirements and improve security by keeping all traffic within the AWS network backbone.
 
-- **Multi-environment support**: Implement workspace-based deployments (dev/staging/prod) with environment-specific configurations and separate state files for better isolation and deployment strategies.
-
 - **Enhanced monitoring and observability**:
   - CloudWatch dashboards for Lambda, RDS, and API Gateway metrics
   - Custom CloudWatch alarms for error rates, latency, and resource utilization
@@ -355,7 +353,6 @@ terraform destroy
   - Lambda layer implementation for shared dependencies
 
 - **Disaster recovery and backup**:
-  - Cross-region/Multi-AZ Aurora replication for disaster recovery
   - Automated database snapshots with lifecycle policies
 
 - **DevOps and automation improvements**:
