@@ -171,43 +171,12 @@ terraform/
    terraform apply tfplan
    ```
 
-## Post-Deploy Verification
-
-- Run `terraform output` to capture key identifiers (API invoke URL, Lambda names, RDS proxy endpoint, bastion instance ID).
-- Test the API Gateway endpoints using `curl`:
-  ```bash
-  INVOKE_URL=$(terraform output -raw api_gateway_invoke_url)
-
-  # GET all animals
-  curl "$INVOKE_URL/animals"
-
-  # POST create a new animal (send JSON directly in body)
-  curl -X POST "$INVOKE_URL/animals" -H 'Content-Type: application/json' \
-       -d '{"name":"Lion","weight":400.00,"height":350.00}'
-
-  # DELETE an animal by name (can use body or query parameter)
-  curl -X DELETE "$INVOKE_URL/animals" -H 'Content-Type: application/json' \
-       -d '{"name":"Lion"}'
-
-  # Alternative DELETE using query parameter
-  curl -X DELETE "$INVOKE_URL/animals?name=Lion"
-  ```
-
 
 ## Local Development & CI
 
 - The repository includes a GitHub Actions workflow at `.github/workflows/gitops.yml` that runs `terraform fmt`, `terraform validate`, `tflint`, and `tfsec` on pull requests.
 - Enable `pre-commit install` to mirror the same checks before committing.
 - Lambda source lives under `terraform/modules/lambda/src`; update the Python handlers and rerun `terraform apply` to publish new logic.
-
-## Cleanup
-
-Destroy the environment when no longer needed to avoid ongoing AWS costs:
-
-```bash
-cd terraform
-terraform destroy
-```
 
 
 ## 🛠 Development Workflow
@@ -330,6 +299,37 @@ terraform destroy
   SELECT * FROM animals;
   \q
   ```
+
+## Post-Deploy Verification
+
+- Run `terraform output` to capture key identifiers (API invoke URL, Lambda names, RDS proxy endpoint, bastion instance ID).
+- Test the API Gateway endpoints using `curl`:
+  ```bash
+  INVOKE_URL=$(terraform output -raw api_gateway_invoke_url)
+
+  # GET all animals
+  curl "$INVOKE_URL/animals"
+
+  # POST create a new animal (send JSON directly in body)
+  curl -X POST "$INVOKE_URL/animals" -H 'Content-Type: application/json' \
+       -d '{"name":"Lion","weight":400.00,"height":350.00}'
+
+  # DELETE an animal by name (can use body or query parameter)
+  curl -X DELETE "$INVOKE_URL/animals" -H 'Content-Type: application/json' \
+       -d '{"name":"Lion"}'
+
+  # Alternative DELETE using query parameter
+  curl -X DELETE "$INVOKE_URL/animals?name=Lion"
+  ```
+
+## Cleanup
+
+Destroy the environment when no longer needed to avoid ongoing AWS costs:
+
+```bash
+cd terraform
+terraform destroy
+```
 
 ## Future Enhancements
 
