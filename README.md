@@ -193,7 +193,8 @@ terraform/
 - After deployment, retrieve outputs:
   ```bash
   terraform output ec2_instance_id
-  terraform output database_cluster_endpoint
+  terraform output database_endpoint
+  terraform output database_proxy_endpoint
   terraform output database_master_username
   terraform output database_iam_token_username
   ```
@@ -230,18 +231,18 @@ terraform/
   -- Create IAM-enabled user
   CREATE USER iam_token_user WITH LOGIN;
 
-  -- Grant database and schema permissions
-  GRANT CONNECT ON DATABASE app TO iam_token_user;
-  GRANT USAGE ON SCHEMA public TO iam_token_user;
-  GRANT ALL PRIVILEGES ON SCHEMA public TO iam_token_user;
-  GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO iam_token_user;
-
   -- Create the animals table
   CREATE TABLE IF NOT EXISTS animals (
     name   TEXT PRIMARY KEY,
     weight NUMERIC(6,2) NOT NULL CHECK (weight > 0),
     height NUMERIC(6,2) NOT NULL CHECK (height > 0)
   );
+
+  -- Grant database and schema permissions
+  GRANT CONNECT ON DATABASE app TO iam_token_user;
+  GRANT USAGE ON SCHEMA public TO iam_token_user;
+  GRANT ALL PRIVILEGES ON SCHEMA public TO iam_token_user;
+  GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO iam_token_user;
 
   -- Set password for the user (replace <PASSWORD> with actual password from Secrets Manager for iam_token_user)
   ALTER ROLE iam_token_user WITH LOGIN PASSWORD '<PASSWORD>';
